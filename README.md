@@ -1,4 +1,4 @@
-# GeoClaimFrequency
+# GeoClaimFrequency 🛰️🗺️📊
 
 This repository contains the formulation and results of the research project conducted in 2025-2026: *"Revealing Geography-Driven Signals in Zone-Level Claim Frequency Models:
 An Empirical Study using Environmental and Visual Predictors"*; this work was done by Ph.D. candidate Ms. Sherly Alfonso-Sánchez, under the supervision of Dr. Kristina G. Stankova and Dr. Cristián Bravo Roman (2026). 
