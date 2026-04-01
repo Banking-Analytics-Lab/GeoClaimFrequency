@@ -89,9 +89,8 @@ def main():
 
     t0 = time.time()
 
-    # -------------------------
+
     # Load data and define outer/inner splits
-    # -------------------------
     df_full = pd.read_csv(args.data_withfolds_id)
 
     fold_col = args.fold_col
@@ -118,9 +117,7 @@ def main():
     inner_details_rows = []   # each val_fold, each (alpha,L1_wt)
     inner_summary_rows = []   # mean across val_folds for each (alpha,L1_wt)
 
-    # -------------------------
     # Inner CV hyperparameter tuning
-    # -------------------------
     for l1_wt in l1_wt_list:
         for alpha in alpha_list:
 
@@ -234,10 +231,9 @@ def main():
     best_alpha = best_row["alpha"]
     best_l1wt  = best_row["L1_wt"]
 
-    # -------------------------
+  
     # Retrain on all 5 inner folds combined,
     # then evaluate on outer test
-    # -------------------------
     df_tr_full  = df_outer_tr.copy()
     df_test_full = df_outer_test.copy()
 
@@ -329,9 +325,8 @@ def main():
 
     print(f'Mean of the y_test {y_test_true.to_numpy().mean()} and std deviation {y_test_true.to_numpy().std(ddof=1)}')
     print(f'Mean of the y_test_pred {mu_test.mean()}')
-    # -------------------------
+  
     # Save everything
-    # -------------------------
     os.makedirs(args.out_dir, exist_ok=True)
 
     #inner_details_path = os.path.join(args.out_dir, f"inner_details_outer{outer_id}.csv")
