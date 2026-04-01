@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 
 print = functools.partial(print, flush=True)
 
-# ---------------------- helpers ----------------------
+#  helpers 
 def set_global_seed(seed: int):
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -69,7 +69,7 @@ def save_learning_curves(tr, va, out_png, title=None):
     if title: plt.title(title)
     fig.savefig(out_png, bbox_inches="tight", dpi=200); plt.close(fig)
 
-# ---------------------- dataset ----------------------
+#  dataset 
 class TabularPoissonDataset(Dataset):
     """
     Returns: tab (tab_dim,), off (scalar log_expo), y (scalar nclaims)
@@ -85,7 +85,7 @@ class TabularPoissonDataset(Dataset):
     def __getitem__(self, idx):
         return self.tab[idx], self.off[idx], self.y[idx]
 
-# ---------------------- model ----------------------
+#  model 
 class TabularPoissonNet(nn.Module):
     """
     Simple MLP for tabular-only Poisson regression with offset:
@@ -101,12 +101,12 @@ class TabularPoissonNet(nn.Module):
         )
 
     def forward(self, tabular, log_offset=None):
-        eta = self.net(tabular).squeeze(1)  # [B]
+        eta = self.net(tabular).squeeze(1)  
         if log_offset is not None:
             eta = eta + log_offset
-        return torch.exp(eta)  # μ
+        return torch.exp(eta)  # mu
 
-# ---------------------- train / eval ----------------------
+#  train / eval 
 def train_fixed_epochs(model, train_loader, val_loader, optimizer, device, scaler, epochs=50):
     tr_losses, va_losses = [], []
     for ep in range(epochs):
@@ -157,7 +157,7 @@ def eval_loader_metrics(model, data_loader, device):
     rmse = float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
     return pnll, rmse, float(y_pred.mean()), y_true, y_pred
 
-# ---------------------- main ----------------------
+# main
 def main():
     ap = argparse.ArgumentParser()
 
