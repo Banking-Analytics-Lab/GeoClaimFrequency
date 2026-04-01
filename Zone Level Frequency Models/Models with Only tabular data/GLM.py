@@ -150,9 +150,8 @@ def main():
     use_cats = (args.cat_vars is not None) and (args.cat_vars != "None")
     base_cat_vars = ast.literal_eval(args.cat_vars) if use_cats else []
 
-    #################################
+
     # Inner CV on df_outer_tr
-    #################################
     cv_rows = []
 
     for val_fold in inner_fold_ids:
@@ -212,9 +211,8 @@ def main():
     cv_mean_rmse = cv_df["val_rmse"].mean()
     cv_std_rmse  = cv_df["val_rmse"].std(ddof=1)
 
-    #################################
+
     # Final refit on all df_outer_tr, test on df_outer_test
-    #################################
     num_vars_full = list(base_num_vars)
     cat_vars_full = list(base_cat_vars)
 
@@ -251,9 +249,8 @@ def main():
 
     test_rmse = sqrt(mean_squared_error(y_test, y_test_pred))
 
-    #################################
+
     # Save results
-    #################################
     os.makedirs(args.out_dir, exist_ok=True)
 
     cv_summary_row = {
@@ -296,9 +293,8 @@ def main():
     test_path = os.path.join(args.out_dir, f"outer_test_metrics_outer{outer_id}.csv")
     test_row.to_csv(test_path, index=False)
 
-    #################################
+   
     # Print summary
-    #################################
     print("=== INNER CV SUMMARY (outer train only) ===")
     print(cv_df[["val_fold","val_pnll","val_rmse"]])
     print(f"CV mean PNLL = {cv_mean_pnll:.6f}  (std {cv_std_pnll:.6f})")
