@@ -9,7 +9,7 @@ Geographic context is often considered relevant for assessing motor insurance ri
 ically provide limited location identifiers, constraining how this information can be incorporated in claim-frequency
 models. This study examines how geographic information from alternative data sources can be incorporated into
 actuarial models for Motor Third Party Liability (MTPL) claim prediction under such constraints.
-Using the BeMTPL97 dataset [CAS Dataset Manual](https://cas.uqam.ca/pub/web/CASdatasets-manual.pdf), we adopt a zone-level modeling framework and evaluate predictive performance on
+Using the BeMTPL97 dataset [(CAS Dataset Manual)](https://cas.uqam.ca/pub/web/CASdatasets-manual.pdf), we adopt a zone-level modeling framework and evaluate predictive performance on
 postcodes not observed during training. Geographic information is introduced through two channels: environmental
 indicators from OpenStreetMap (2014) and CORINE Land Cover 2000, and orthoimagery from 1995 released by
 the Belgian National Geographic Institute for academic use. We evaluate the predictive contribution of coordinates,
