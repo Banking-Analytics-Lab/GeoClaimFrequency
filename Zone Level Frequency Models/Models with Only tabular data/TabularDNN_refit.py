@@ -1,5 +1,3 @@
-# TabularDNN_refit_final.py
-#
 # Refit the tabular-only DNN on outer-train with fixed best hyperparameters, then evaluate on the outer-test.
 import os, argparse, time, json, functools
 import numpy as np
