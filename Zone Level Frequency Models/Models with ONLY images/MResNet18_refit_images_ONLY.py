@@ -83,7 +83,7 @@ class PoissonResNet18ImagesOnly(nn.Module):
     def __init__(self, device, weights_path, image_embed_dim=512, hidden_dim=128, dropout=0.1):
         super().__init__()
         base = resnet18(weights=None)
-        # load pretrained resnet18 weights (your saved weights)
+        # load pretrained resnet18 weights 
         state_dict = torch.load(weights_path, map_location=device)
         base.load_state_dict(state_dict)
 
