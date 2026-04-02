@@ -133,7 +133,7 @@ gdf_art = gpd.clip(gdf_art, study_extent)
 gdf_art = gdf_art.dissolve()
 gdf_art["geometry"] = gdf_art.buffer(0)
 gdf_art = gdf_art.explode(index_parts=False)
-gdf_art["geometry"] = gdf_art.simplify(5)  # ~5 m tolerance; adjust if you want even faster
+gdf_art["geometry"] = gdf_art.simplify(5) 
 gdf_art = gdf_art[~gdf_art.geometry.is_empty].set_crs(CRS_METRIC)
 art_union = gdf_art.unary_union  # shapely geometry
 from shapely.prepared import prep
