@@ -13,13 +13,13 @@ def merge_osm_features(base_df, osm_df, save_path=None, precision=5, selected_co
         base_df = base_df.drop("Unnamed: 0", axis=1)
 
     osm_df = osm_df.copy()
-    # ensure join key types match
+    # join key types match
     if "postcode" not in base_df.columns or "postcode" not in osm_df.columns:
         raise ValueError("Both base and OSM CSVs must have column 'postcode'")
     base_df["postcode"] = base_df["postcode"].astype(str)
     osm_df["postcode"]  = osm_df["postcode"].astype(str)
 
-    # choose OSM columns to keep
+    # choose OSM columns
     if selected_columns is not None:
         cols_to_use = ["postcode"] + [c for c in selected_columns if c in osm_df.columns]
         missing = sorted(set(selected_columns) - set(cols_to_use))
