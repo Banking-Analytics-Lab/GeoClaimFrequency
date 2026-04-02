@@ -14,7 +14,7 @@ source ~/p3_env_gnn/bin/activate
 
 OUTER_FOLD=${SLURM_ARRAY_TASK_ID}
 
-# Per-fold CSV produced earlier (ensure this exists & is readable)
+# Per-fold CSV produced before
 BASE_DIR="/home/salfonso/projects/rrg-cbravo/Project3/Study_by_zones_extensive_CV_1025/Data_creation/Embeddings_Resnet18"
 DATA_DIR="${BASE_DIR}/outer${OUTER_FOLD}/data_withfolds_id_withEmb_outer${OUTER_FOLD}.csv"
 
