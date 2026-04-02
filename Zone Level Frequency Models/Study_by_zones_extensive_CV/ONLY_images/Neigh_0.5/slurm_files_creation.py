@@ -14,7 +14,7 @@ walltime_for_epoch = {
 
 slurm_array_range = "0-7"
 
-# static paths / args from your base script
+# static paths args 
 DATA_CSV = "/home/salfonso/projects/rrg-cbravo/salfonso/Project3/Study_by_zones_extensive_CV_1025/Data_creation/Stratified_division/alldata_with_fold_id.csv"
 UNIQUE_LOC = "/home/salfonso/projects/def-cbravo/salfonso/Belgian/Preprocessing/Images_extract_unique_options/unique_locations_BeMTPL97.csv"
 IMG_ROOT = "/home/salfonso/scratch/Belgian/Images_Ortho_95"
