@@ -291,9 +291,7 @@ def append_result_row(csv_path: str, row: dict, fieldnames: list):
         wr.writerow({k: row.get(k, "") for k in fieldnames})
         f.flush(); os.fsync(f.fileno())
         fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
-
-# Main CV driver
+u
 def main():
     ap = argparse.ArgumentParser()
 
@@ -362,7 +360,7 @@ def main():
     df_outer_tr["log_Exposure"]   = np.log(df_outer_tr["expo"])
     df_outer_test["log_Exposure"] = np.log(df_outer_test["expo"])
 
-    # postcode -> lat/long lookup
+    # postcode to lat/long lookup
     unique_loc = pd.read_csv(args.unique_loc_csv).set_index("postcode")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
