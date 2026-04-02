@@ -51,7 +51,7 @@ def preprocess_tabular_data(X_train, X_val, num_vars, cat_vars=None):
     return arrays + the fitted preprocessor.
     """
     if cat_vars is None or len(cat_vars) == 0:
-        # numeric-only case (what you do now)
+        # numeric-only case
         pre = ColumnTransformer(
             [("num", Pipeline([("scaler", StandardScaler())]), num_vars)],
             remainder="drop")
@@ -321,7 +321,7 @@ def main():
     ap.add_argument("--seed", type=int, default=42,
         help="Global random seed (single-seed protocol).")
     ap.add_argument("--weights_path", required=True,
-        help="Path to resnet18_weights.pth (pretrained weights you already saved).")
+        help="Path to resnet18_weights.pth (pretrained weights already saved).")
 
     # hyperparameter grid
     ap.add_argument("--batch_size", type=int, required=True)
