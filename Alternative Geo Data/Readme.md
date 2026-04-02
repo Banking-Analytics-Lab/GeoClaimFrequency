@@ -5,7 +5,7 @@ This folder contains the script:
 
 - `osm14corine2000_feature_extract.py`
 
-This script constructs environmental features for each postcode using **OpenStreetMap (OSM) 2014** data combined with **CORINE Land Cover 2000**. Features are computed at multiple spatial radii.
+This script constructs environmental features for each postcode using OpenStreetMap (OSM) 2014 data combined with CORINE Land Cover 2000. Features are computed at multiple spatial radii.
 
 ---
 
@@ -33,11 +33,11 @@ CORINE 2000 is a land cover inventory with 44 thematic classes for the reference
 
 ---
 
-The image data used in this project is provided for **non-profit, non-commercial, teaching, or scientific research purposes only**, under the condition that the source and owner are clearly acknowledged.
+The image data used in this project is provided for non-profit, non-commercial, teaching, or scientific research purposes only, under the condition that the source and owner are clearly acknowledged.
 
 Required attribution:
 
-> © Institut géographique national @ Cartesius.be (for academic purposes)
+ © Institut géographique national @ Cartesius.be (for academic purposes)
 
 ---
 
