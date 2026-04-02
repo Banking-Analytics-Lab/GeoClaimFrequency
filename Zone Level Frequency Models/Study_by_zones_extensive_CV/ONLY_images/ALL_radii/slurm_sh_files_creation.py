@@ -22,7 +22,7 @@ IMG_ROOT = "/home/salfonso/scratch/Belgian/Images_Ortho_95"
 WEIGHTS_PATH = "/home/salfonso/projects/def-cbravo/salfonso/Belgian/Models_frequency/Poisson_Assumption/DNN_images_osm_standard/ResNet18/resnet18_weights.pth"
 
 
-# Base folder for multi-radii outputs (kept separate from every Neigh_x singles)
+# Base folder for multi-radii outputs 
 BASE_OUT_ROOT = "/home/salfonso/scratch/Belgian/Study_by_zones_extensive_CV/ONLY_images/ALL_radii"
 GRID_CSV_TEMPLATE = "/home/salfonso/projects/rrg-cbravo/salfonso/Project3/Study_by_zones_extensive_CV_1025/Models_frequency/Imagenes_DNN/hyperparam_grid_ep{epochs}.csv"
 
@@ -73,7 +73,7 @@ template = dedent("""\
 
     GRID_CSV="{grid_csv}"
 
-    # 2. Selecting hyperparameters
+    # Selecting hyperparameters
    
     IDX=${{SLURM_ARRAY_TASK_ID}}
     HPARAM_LINE=$(tail -n +2 "${{GRID_CSV}}" | sed -n "$((IDX+1))p")
