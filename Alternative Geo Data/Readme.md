@@ -31,4 +31,13 @@ Useful references:
 
 CORINE 2000 is a land cover inventory with 44 thematic classes for the reference year 2000.
 
+---
+
+The image data used in this project is provided for **non-profit, non-commercial, teaching, or scientific research purposes only**, under the condition that the source and owner are clearly acknowledged.
+
+Required attribution:
+
+> © Institut géographique national @ Cartesius.be (for academic purposes)
+
+---
 
