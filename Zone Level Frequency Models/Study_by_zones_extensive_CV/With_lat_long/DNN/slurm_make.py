@@ -1,11 +1,11 @@
 import os
 from textwrap import dedent
 
-outers = [0,1,2,3,4,5]              # your 6 outer folds
+outers = [0,1,2,3,4,5]              # 6 outer folds
 epoch_options = [15, 30, 60]        # one .sh per epoch value
-slurm_array_range = "0-7"           # match rows-1 in your grid CSV (excluding header)
+slurm_array_range = "0-7"           # match rows-1
 
-# walltime per epoch (tune to your cluster)
+
 walltime_for_epoch = {
     15: "01:00:00",
     30: "02:35:00",
