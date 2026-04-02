@@ -21,6 +21,7 @@ import functools
 from shapely import contains
 from shapely.geometry import Point, shape
 from pyrosm import OSM
+from shapely.prepared import prep
 
 import rasterio
 import rasterio.features
@@ -45,7 +46,7 @@ CLC_ARTIFICIAL_ALL = set(range(1, 12)) #{111, 112, 121, 122, 123, 124, 131, 132,
 #https://clc.gios.gov.pl/doc/clc/CLC_Legend_EN.pd
 CLC_BUILTUP_CORE   = set(range(1, 6)) #{111, 112, 121, 122, 123, 124} # Core urban & transport
 
-# choose which mask to use:
+# select which mask to use:
 USE_CORE_BUILTUP_ONLY = False
 ARTIF_CODES = CLC_BUILTUP_CORE if USE_CORE_BUILTUP_ONLY else CLC_ARTIFICIAL_ALL
 
@@ -126,7 +127,7 @@ gdf_art = gpd.GeoDataFrame(geometry=artificial_polys, crs=crs_clc)
 # reproject to 31370 first
 gdf_art = gdf_art.to_crs(CRS_METRIC)
 
-# clip to the study extent to remove 99% of polygons outside Belgium-of-interest
+# clip to the study extent to remove 99% of polygons outside zone of interest
 gdf_art = gpd.clip(gdf_art, study_extent)
 
 # dissolve to a single polygon, clean, and simplify to speed up later intersections
@@ -136,7 +137,7 @@ gdf_art = gdf_art.explode(index_parts=False)
 gdf_art["geometry"] = gdf_art.simplify(5) 
 gdf_art = gdf_art[~gdf_art.geometry.is_empty].set_crs(CRS_METRIC)
 art_union = gdf_art.unary_union  # shapely geometry
-from shapely.prepared import prep
+
 art_prep = prep(art_union)
 print("  CORINE mask ready (simplified & prepared).")
 
