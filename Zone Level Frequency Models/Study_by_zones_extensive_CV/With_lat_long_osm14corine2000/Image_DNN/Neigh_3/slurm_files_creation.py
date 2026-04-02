@@ -42,7 +42,7 @@ SBATCH_MEM_LINE = "#SBATCH --mem=8G"
 OUTPUT_FOLDER = "/home/salfonso/scratch/Belgian/Study_by_zones_extensive_CV/With_lat_long_osm14corine2000/Image_DNN"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# --------- TEMPLATE ----------
+# Template
 template = dedent("""\
     #!/bin/bash
     #SBATCH --job-name=N{radius}_out{outer}_sc_ep{epochs}
