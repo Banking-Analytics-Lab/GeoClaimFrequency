@@ -8,7 +8,7 @@ from PIL import Image
 # This is the final since we require to have one per each data fold!
 print = functools.partial(print, flush=True)
 
-# -------------------- helpers --------------------
+# helpers
 def set_seed(s=611):
     np.random.seed(s); torch.manual_seed(s); torch.cuda.manual_seed_all(s)
     torch.backends.cudnn.deterministic = True; torch.backends.cudnn.benchmark = False
@@ -88,7 +88,6 @@ def extract_embeddings(backbone, loader, device, prefix="img_embR3km"):
     out.insert(0,"idx",ids); out.insert(1,"postcode",pcs) # create a data frame with those columns first idx, second the postcode and following the 512 embeddings
     return out
 
-# -------------------- main --------------------
 def main():
     ap = argparse.ArgumentParser("Generate augmented CSV (3 km embeddings) per outer fold.")
     ap.add_argument("--data_withfolds_id", required=True)
@@ -139,7 +138,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     backbone = build_resnet18_1ch(args.weights_path,device)
 
-    # ---- extract embeddings for outer-train + outer-test ----
+    # extract embeddings for outer-train + outer-test
     ds_tr = EmbedDataset(df_train,loc,args.img_root,3,tfm)
     ds_te = EmbedDataset(df_test,loc,args.img_root,3,tfm)
     dl_tr = DataLoader(ds_tr,batch_size=args.batch_size,shuffle=False,
@@ -151,7 +150,7 @@ def main():
     emb_te = extract_embeddings(backbone,dl_te,device)
     emb_all = pd.concat([emb_tr,emb_te],ignore_index=True)
 
-    # ---- merge back & save ----
+    #save 
     df_aug = df.merge(emb_all,on=["idx","postcode"],how="left")
     os.makedirs(os.path.dirname(args.out_path) or ".", exist_ok=True)
     df_aug.to_csv(args.out_path,index=False)
