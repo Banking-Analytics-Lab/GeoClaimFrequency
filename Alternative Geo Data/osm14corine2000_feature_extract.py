@@ -112,11 +112,49 @@ study_extent = gdf_loc.unary_union.buffer(MAX_R).envelope  #
 # CORINE 2000 mask 
 print("Building CORINE 2000 artificial-surface mask…")
 with rasterio.open(PATH_CLC2000_TIF) as src:
-    clc = src.read(1)
+    clc_ma = src.read(1, masked=True)
     transform = src.transform
     crs_clc = src.crs
+    nodata    = src.nodata
 
-mask = np.isin(clc, list(ARTIF_CODES)).astype(np.uint8)
+# For reporting, look only at valid pixels
+vals_valid = np.unique(clc_ma.compressed().astype(int))
+print("CLC codes (sample):", vals_valid[:20], "... min:", vals_valid.min(), "max:", vals_valid.max(), "nodata:", nodata)
+
+# Detect coding scheme on valid pixels only
+lvl3_artificial = {111,112,121,122,123,124,131,132,133,141,142}
+index44_all     = set(range(1, 45))
+lvl1_all        = {1,2,3,4,5}
+
+if (len(set(vals_valid) & lvl3_artificial) >= 3) or (vals_valid.max() >= 100):
+    scheme = "lvl3"
+elif (vals_valid.min() >= 1) and (vals_valid.max() <= 44) and set(vals_valid).issubset(index44_all):
+    scheme = "index44"
+elif set(vals_valid).issubset(lvl1_all):
+    scheme = "lvl1"
+else:
+    # fall back to index44 if it is like 1..44 
+    raise ValueError("Unrecognized CORINE coding after removing NODATA; inspect printed codes")
+
+print("Detected CORINE scheme:", scheme)
+#This was to recognize the codes
+if scheme == "lvl3":
+    CLC_ARTIFICIAL_ALL = lvl3_artificial
+    CLC_BUILTUP_CORE   = {111,112,121,122,123,124}
+elif scheme == "index44":
+    # CLC Level-3 classes are reindexed to 1..44  (1..11 = artificial surfaces)
+    CLC_ARTIFICIAL_ALL = set(range(1, 12))   # 1..11
+    CLC_BUILTUP_CORE   = set(range(1, 6))    # 1..5 = core built-up/transport
+elif scheme == "lvl1":
+    CLC_ARTIFICIAL_ALL = {1}
+    CLC_BUILTUP_CORE   = {1}
+
+ARTIF_CODES = CLC_BUILTUP_CORE if USE_CORE_BUILTUP_ONLY else CLC_ARTIFICIAL_ALL
+
+# Build mask strictly on valid pixels, NODATA stays 0
+mask_bool = (~clc_ma.mask) & np.isin(clc_ma.filled(0).astype(int), list(ARTIF_CODES)) & (clc_ma.filled(0) != 0)
+mask = mask_bool.astype(np.uint8)
+print("Mask coverage fraction:", float(mask.mean()))
 
 # Polygonize only once
 print("Vectorizing CORINE mask…")
@@ -124,31 +162,48 @@ shapes = rasterio.features.shapes(mask, transform=transform)
 artificial_polys = [shape(geom) for geom, val in shapes if val == 1]
 gdf_art = gpd.GeoDataFrame(geometry=artificial_polys, crs=crs_clc)
 
-# reproject to 31370 first
+# reproject to 31370 
 gdf_art = gdf_art.to_crs(CRS_METRIC)
 
-# clip to the study extent to remove 99% of polygons outside zone of interest
+# clip to the study extent to remove 99% of polygons outside Belgium of interest
 gdf_art = gpd.clip(gdf_art, study_extent)
 
-# dissolve to a single polygon, clean, and simplify to speed up later intersections
+# dissolve to a single multipolygon
 gdf_art = gdf_art.dissolve()
 gdf_art["geometry"] = gdf_art.buffer(0)
 gdf_art = gdf_art.explode(index_parts=False)
-gdf_art["geometry"] = gdf_art.simplify(5) 
+gdf_art["geometry"] = gdf_art.simplify(5)  
 gdf_art = gdf_art[~gdf_art.geometry.is_empty].set_crs(CRS_METRIC)
-art_union = gdf_art.unary_union  # shapely geometry
-
+art_union = gdf_art.unary_union  
 art_prep = prep(art_union)
 print("  CORINE mask ready (simplified & prepared).")
+## reusable GeoDataFrame for mask operations
+gdf_mask = gpd.GeoDataFrame(geometry=[art_union], crs=CRS_METRIC)
 
-# load OSM vectors 
+# OSM vectors
 print("Loading OSM (roads / POIs / buildings)…")
 osm = OSM(PATH_OSM_PBF)
 
 # Load minimal columns only
 roads_full = osm.get_network(network_type="all")
-pois_full  = osm.get_pois()
+#pois_full  = osm.get_pois()
 blds_full  = osm.get_buildings()
+traffic_filters = {
+    "custom_filter": {
+        "highway": ["traffic_signals"],   # nodes
+        "traffic_calming": True,          # bumps, humps, tables...
+        "traffic_sign": True,             # includes 'stop'
+        "amenity": True,                  # parking, fuel, hospital, school...
+        "shop": True,
+        "tourism": True
+    },
+    "filter_type": "keep",
+    "keep_nodes": True,
+    "keep_ways": True,
+    "keep_relations": False
+}
+raw = osm.get_data_by_custom_criteria(**traffic_filters)
+pois_full = gpd.GeoDataFrame(raw, geometry="geometry", crs=4326)
 
 # Project once
 roads_full = roads_full.to_crs(CRS_METRIC)
@@ -168,7 +223,7 @@ roads_full = gpd.clip(roads_full, study_extent)
 pois_full  = gpd.clip(pois_pts,  study_extent)
 blds_full  = gpd.clip(blds_full,  study_extent)
 
-
+# Keep the interested columns
 roads = roads_full[["geometry","highway","oneway","lit","lanes","maxspeed","junction"]].copy()
 pois = pois_full.copy()
 print(f'Columns of the points')
@@ -179,44 +234,55 @@ blds_full  = blds_full[["geometry","building","building:levels","height","buildi
 
 # Keep only stable highway classes
 roads = roads[roads["highway"].isin(STABLE_HWY)].copy()
+###
+print("Before CORINE mask:")
+print("  Roads:", len(roads_full))
+print("  POIs :", len(pois_full))
+print("  Blds :", len(blds_full))
 
-
-print("Applying CORINE mask to OSM layers once")
+# Premask once
+print("Applying CORINE mask to OSM layers once… (this is the big win)")
 # Intersect with art_union once so downstream only clips by buffers
-roads = gpd.overlay(roads, gpd.GeoDataFrame(geometry=[art_union], crs=CRS_METRIC), how="intersection")
+roads = gpd.overlay(roads, gdf_mask, how="intersection")
 r_time = time.time() - t0
 print(f'Done the masking for the roads in {r_time:.2f} sec')
-pois  = gpd.overlay(pois,  gpd.GeoDataFrame(geometry=[art_union], crs=CRS_METRIC), how="intersection")
+pois  = gpd.overlay(pois_full, gdf_mask, how="intersection")
 p_time = time.time() - t0
-print(f'Done the masking for the roads in {p_time:.2f} sec')
-
-#representative points (always inside polygon)
+print(f'Done the masking for the points in {p_time:.2f} sec')
 blds_pts = blds_full.copy()
 blds_pts["geometry"] = blds_pts.geometry.representative_point()
-mask_hit = contains(art_union, blds_pts.geometry.array)
-# Only buildings whose centroid lies inside CORINE artificial surfaces
-blds = blds_pts.loc[mask_hit].copy()
 
-# Build spatial index once 
+try:
+    blds = gpd.sjoin(blds_pts, gdf_mask, predicate="intersects", how="inner").drop(columns=["index_right"])
+except TypeError:
+    # GeoPandas < 0.10 fallback
+    blds = gpd.sjoin(blds_pts, gdf_mask, op="intersects", how="inner").drop(columns=["index_right"])
+
+print("Buildings before mask:", len(blds_pts), "after mask:", len(blds))
+
+# Build spatial index once (used later in buffers)
 _ = blds.sindex
 b_time = time.time() - t0
-print(f'Done the masking for the roads in {b_time:.2f} sec')
+print(f'Done the masking for the buldings in {b_time:.2f} sec')
 
-# If POIs include non-points, turn them into points 
-pois_pts = pois_as_points(pois)
+# after masking
+print("After CORINE mask:")
+print("  Roads:", len(roads))
+print("  POIs :", len(pois))
+print("  Blds :", len(blds))
 
 print("Masked OSM ready. Main loop will only clip by buffers now.")
 # Verify CRS and bounds
-print("CRS:", roads.crs, pois_pts.crs, blds.crs, gdf_art.crs, gdf_loc.crs)
+print("CRS:", roads.crs, pois.crs, blds.crs, gdf_art.crs, gdf_loc.crs)
 print("roads bounds:", roads.total_bounds)
-print("pois_pts bounds:", pois_pts.total_bounds)
+print("pois bounds:", pois.total_bounds)
 print("blds bounds:", blds.total_bounds)
 print("gdf_art bounds:", gdf_art.total_bounds)
 print("locs bounds:", gdf_loc.total_bounds)
 ver_t = time.time() - t0
 print(f'Time until here {ver_t:.2f} sec')
 
-# feature engine
+# feature engine 
 def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
     """
     Compute all features inside:
@@ -229,19 +295,20 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
 
     # Clip each layer to the buffer first (fast), then intersect with Corin mask
     R = gpd.clip(roads, buf)  
-    P = gpd.clip(pois_pts, buf)
+    #P = gpd.clip(pois_pts, buf)
+    P = gpd.clip(pois, buf)
     #B = gpd.clip(blds, buf)  
     idx = list(blds.sindex.query(buf, predicate="within"))
     B = blds.iloc[idx]
 
-    # Roads 
+    #Roads 
     if len(R) == 0:
-        # densities per km² -> 0.0 (no roads, zero density)
+        # densities per km² -> 0.0 (no roads => zero density)
         road_len_km_per_km2 = 0.0
         intersection_count_per_km2 = 0.0
         roundabout_count_per_km2 = 0.0
         
-        # shares/means over road length NaN (undefined when no roads)
+        # shares/means over road length -> NaN (undefined when no roads)
         pct_len_major = np.nan
         pct_len_minor = np.nan
         oneway_share_len = np.nan
@@ -254,20 +321,20 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
         total_len_km = R["len_km"].sum()
         road_len_km_per_km2 = per_km2(total_len_km, area_km2)
 
-        # Percentage of major-road density
+        # Percentage of major road density
         hi = R[R["highway"].isin({"motorway", "trunk", "primary"})]
         pct_len_major = hi["len_km"].sum() / max(total_len_km, 1e-9)
 
-        # Percentage of minor-road density
+        # Percentage of minor road density
         mi = R[R["highway"].isin({"secondary", "tertiary"})]
         pct_len_minor = mi["len_km"].sum() / max(total_len_km, 1e-9)
 
-        # oneway, we are treating yes/true/1/-1 as one-way
+        # oneway
         oneway_vals = R.get("oneway", pd.Series(index=R.index)).astype(str).str.lower()
         oneway_len_km = R.loc[oneway_vals.isin({"yes","true","1","-1"}), "len_km"].sum()
         oneway_share_len = oneway_len_km / total_len_km if total_len_km else np.nan
 
-        # lit  yes/true/1 as lit
+        # lit yes/true/1 as lit
         lit_vals = R.get("lit", pd.Series(index=R.index)).astype(str).str.lower()
         lit_len_km = R.loc[lit_vals.isin({"yes","true","1"}), "len_km"].sum()
         lit_share_len = lit_len_km / total_len_km if total_len_km else np.nan
@@ -275,11 +342,9 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
         # Mean of the lanes
         R["lanes_num"] = pd.to_numeric(R.get("lanes", pd.Series(index=R.index)), errors="coerce")
         has_lanes = R["lanes_num"].notna()
-        #coverage = R.loc[has_lanes, "len_km"].sum() / total_len_km
         lanes_mean = np.average(R.loc[has_lanes, "lanes_num"], weights=R.loc[has_lanes, "len_km"]) if has_lanes.any() else np.nan
         maxspeed_mean_kmh = R.get("maxspeed", pd.Series(index=R.index)).apply(first_number).mean()
 
-        # geometric intersections: vertices shared by >=3 segments
         # This takes all the vertices and look if they are repited 3 or more times...
         exploded = R.explode(index_parts=False)
         coords = exploded.geometry.apply(lambda g: list(g.coords) if g is not None else []).explode()
@@ -292,8 +357,7 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
 
         roundabout_count_per_km2 = per_km2(int(R.get("junction", pd.Series(index=R.index)).astype(str).str.lower().eq("roundabout").sum()), area_km2)
 
-
-    # POIs
+    #POIs 
     if len(P) == 0:
         traffic_signal_count_per_km2 = 0.0
         stop_sign_count_per_km2      = 0.0
@@ -322,14 +386,9 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
         shop             = tag_series(P, "shop")
         tourism          = tag_series(P, "tourism")
 
-        # traffic signals
+        # traffic signals (avoid double-counting)
         traffic_signal_count = int(((highway == "traffic_signals") | (crossing == "traffic_signals")).sum())
-
-        # stop signs 
-        stop_sign_count = int(
-            traffic_sign.str.split(";").apply(lambda xs: "stop" in [s.strip() for s in xs]).sum()
-        )
-
+        stop_sign_count = int((highway == "stop").sum()) + int(traffic_sign.str.split(";").apply(lambda xs: "stop" in [s.strip() for s in xs]).sum())
         # vertical calming only
         vertical_calming = {"bump", "hump", "table", "cushion", "rumble_strip", "mini_bumps"}
         speed_bump_count = int(traffic_calming.isin(vertical_calming).sum())
@@ -344,7 +403,7 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
         education_count = int(amenity.isin(edu_vals).sum())
         has_education = int(education_count > 0)
 
-        #Healthcare
+        # Healthcare
         health_vals = {"hospital", "clinic"}
         healthcare_count = int(amenity.isin(health_vals).sum())
         has_healthcare = int(healthcare_count > 0)
@@ -364,7 +423,8 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
         healthcare_count_per_km2 = per_km2(healthcare_count, area_km2)
         fuel_count_per_km2 = per_km2(fuel_count, area_km2)
 
-    #  Buildings
+    # A more robust version with lower case cleaning and also managing info like 12m as 12
+    # Buildings 
     if len(B) == 0:
         building_count_per_km2 = 0.0
         avg_building_levels = np.nan
@@ -385,19 +445,19 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
         levels_ser = pd.to_numeric(B.get("building:levels", pd.Series(index=B.index)), errors="coerce")
         avg_building_levels = levels_ser.mean()
 
-        # Height parse numbers (handles e.g. "12 m")
+        # Height: parse numbers (handles e.g. "12 m")
         height_raw = B.get("height", pd.Series(index=B.index)).astype(str)
         height_num = pd.to_numeric(height_raw.str.extract(r"([-+]?\d*\.?\d+)")[0], errors="coerce")
         avg_building_height = height_num.mean()
 
-        # Diversity simple counts of distinct non-empty values
+        # Diversity: simple counts of distinct non-empty values
         use_ser = B.get("building:use", pd.Series(index=B.index)).astype(str).str.lower().replace({"": np.nan})
         building_use_diversity = int(use_ser.dropna().nunique())
 
         mat_ser = B.get("building:material", pd.Series(index=B.index)).astype(str).str.lower().replace({"": np.nan})
         building_material_diversity = int(mat_ser.dropna().nunique())
 
-        # Broad building type buckets 
+        # Broad building type buckets (robust to common aliases)
         bld = B.get("building", pd.Series(index=B.index)).astype(str).str.lower()
 
         res_keys = {"residential", "house", "detached", "semidetached_house", "terrace", "apartments"}
@@ -408,7 +468,7 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
         com_bld = int(bld.isin(com_keys).sum())
         ind_bld = int(bld.isin(ind_keys).sum())
 
-        #  'mixed' OR building use looks mixed (e.g., "residential;retail")
+        # Mixed useexplicit 'mixed' OR building:use looks mixed (e.g., "residential;retail")
         use_has_mixed = use_ser.fillna("").str.contains(r"\bmixed\b|;", regex=True)
         mix_bld = int((bld.eq("mixed") | use_has_mixed).sum())
 
@@ -453,8 +513,9 @@ def features_for_buffer(center_geom, radius_m) -> Dict[str, float]:
     )
 
 
-
-print("Computing features")
+# main loop
+print("Computing features…")
+rows = []
 for i, loc in gdf_loc.iterrows():
     base = {"postcode": loc["postcode"], "lat": loc["lat"], "long": loc["long"]}
     for r in RADII_M:
