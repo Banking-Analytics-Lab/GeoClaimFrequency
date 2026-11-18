@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
 #SBATCH --time=05:30:00
-#SBATCH --account=def-cbravo
+#SBATCH --account=<your-allocation>
 #SBATCH --output=Poisson_GLM_nomicv15emb.%A_%a.out
 
 set -euo pipefail
@@ -14,10 +14,10 @@ source ~/p3_env_gnn/bin/activate
 
 OUTER_FOLD=${SLURM_ARRAY_TASK_ID}
 
-DATA_DIR="/home/salfonso/projects/rrg-cbravo/Project3/Study_by_zones_extensive_CV_1025/Data_creation/Embeddings_nomic_v15/augmented_with_nomic3km.csv"
+DATA_DIR="${WORK_DIR:-data/Data_creation}/Embeddings_nomic_v15/augmented_with_nomic3km.csv"
 
-OUT_DIR="/home/salfonso/scratch/Belgian/Study_by_zones_extensive_CV/With_lat_long/GLM_reg_nomic_v15Emb/Results"
-SCRIPT="/home/salfonso/projects/rrg-cbravo/Project3/Study_by_zones_extensive_CV_1025/Models_frequency/GLM/GLM_reg.py"
+OUT_DIR="${RESULTS_DIR:-results}/With_lat_long/GLM_reg_nomic_v15Emb/Results"
+SCRIPT="${CODE_DIR:-.}/Zone Level Frequency Models/Models with Only tabular data/GLM_reg.py"
 
 mkdir -p "$OUT_DIR"
 

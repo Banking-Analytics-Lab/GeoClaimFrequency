@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
 #SBATCH --time=02:30:00
-#SBATCH --account=def-cbravo
+#SBATCH --account=<your-allocation>
 #SBATCH --output=XGB_resnet18emb.%A_%a.out
 
 set -euo pipefail
@@ -15,11 +15,11 @@ source ~/p3_env_gnn/bin/activate
 OUTER_FOLD=${SLURM_ARRAY_TASK_ID}
 
 # Per-fold CSV produced earlier
-BASE_DIR="/home/salfonso/projects/rrg-cbravo/Project3/Study_by_zones_extensive_CV_1025/Data_creation/Embeddings_Resnet18"
+BASE_DIR="${WORK_DIR:-data/Data_creation}/Embeddings_Resnet18"
 DATA_DIR="${BASE_DIR}/outer${OUTER_FOLD}/data_withfolds_id_withEmb_outer${OUTER_FOLD}.csv"
 
-OUT_DIR="/home/salfonso/scratch/Belgian/Study_by_zones_extensive_CV/With_lat_long/XGB_ResNet18Emb/Results"
-SCRIPT="/home/salfonso/projects/rrg-cbravo/Project3/Study_by_zones_extensive_CV_1025/Models_frequency/XGB/XGB.py"
+OUT_DIR="${RESULTS_DIR:-results}/With_lat_long/XGB_ResNet18Emb/Results"
+SCRIPT="${CODE_DIR:-.}/Zone Level Frequency Models/Models with Only tabular data/XGB.py"
 
 mkdir -p "$OUT_DIR"
 

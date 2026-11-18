@@ -16,18 +16,18 @@ walltime_for_epoch = {
 slurm_array_range = "0-7"  
 
 # static paths
-DATA_CSV = "/home/salfonso/projects/rrg-cbravo/salfonso/Project3/Study_by_zones_extensive_CV_1025/Data_creation/Stratified_division/alldata_with_fold_id.csv"
-UNIQUE_LOC = "/home/salfonso/projects/def-cbravo/salfonso/Belgian/Preprocessing/Images_extract_unique_options/unique_locations_BeMTPL97.csv"
-IMG_ROOT = "/home/salfonso/scratch/Belgian/Images_Ortho_95"
-WEIGHTS_PATH = "/home/salfonso/projects/def-cbravo/salfonso/Belgian/Models_frequency/Poisson_Assumption/DNN_images_osm_standard/ResNet18/resnet18_weights.pth"
+DATA_CSV = os.path.join(os.environ.get("WORK_DIR", "data/Data_creation"), "Stratified_division/alldata_with_fold_id.csv")
+UNIQUE_LOC = os.path.join(os.environ.get("INPUT_DIR", "data"), "unique_locations_BeMTPL97.csv")
+IMG_ROOT = os.environ.get("IMAGES_DIR", "data/Images_Ortho_95")
+WEIGHTS_PATH = os.path.join(os.environ.get("INPUT_DIR", "data"), "resnet18_weights.pth")
 
 
 # Base folder for multi-radii outputs 
-BASE_OUT_ROOT = "/home/salfonso/scratch/Belgian/Study_by_zones_extensive_CV/ONLY_images/ALL_radii"
-GRID_CSV_TEMPLATE = "/home/salfonso/projects/rrg-cbravo/salfonso/Project3/Study_by_zones_extensive_CV_1025/Models_frequency/Imagenes_DNN/hyperparam_grid_ep{epochs}.csv"
+BASE_OUT_ROOT = os.path.join(os.environ.get("RESULTS_DIR", "results"), "ONLY_images/ALL_radii")
+GRID_CSV_TEMPLATE = os.path.join(os.environ.get("INPUT_DIR", "data"), "hyperparam_grid_ep{epochs}.csv")
 
 
-PYTHON_SCRIPT = "/home/salfonso/projects/rrg-cbravo/salfonso/Project3/Study_by_zones_extensive_CV_1025/Models_frequency/Imagenes_DNN/MResNet18_multiRadii_extcv_ONLY_images.py"
+PYTHON_SCRIPT = os.path.join(os.environ.get("CODE_DIR", "."), "Zone Level Frequency Models/Models with ONLY images/MResNet18_multiRadii_extcv_ONLY_images.py")
 
 MODULE_LINES = """\
 module load gcc arrow/19.0.1
@@ -40,7 +40,7 @@ SBATCH_CPUS_LINE = "#SBATCH --cpus-per-task=2"
 SBATCH_MEM_LINE  = "#SBATCH --mem=8G"
 
 
-OUTPUT_FOLDER = "/home/salfonso/scratch/Belgian/Study_by_zones_extensive_CV/ONLY_images/ALL_radii"
+OUTPUT_FOLDER = os.path.join(os.environ.get("RESULTS_DIR", "results"), "ONLY_images/ALL_radii")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 # Produce the template
@@ -84,7 +84,7 @@ template = dedent("""\
     echo "radii=${{RADII}}"
 
     # 3. run the inner cv for the given config
-    python {python_script} \
+    python "{python_script}" \
       --data_withfolds_id "${{DATA_CSV}}" \
       --unique_loc_csv "${{UNIQUE_LOC}}" \
       --outer_fold $OUTER \
