@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this code, please cite the paper below."
 title: "GeoClaimFrequency"
-# license: pending (the authors' consent is outstanding; no LICENSE file yet)
+# No open licence yet: the code is shared for review only until the paper is accepted (see LICENSE).
 repository-code: "https://github.com/Banking-Analytics-Lab/GeoClaimFrequency"
 authors:
   - family-names: "Alfonso-Sánchez"

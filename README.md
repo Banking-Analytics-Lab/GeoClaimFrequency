@@ -191,7 +191,8 @@ The paper reports test RMSE per outer fold, with its mean and standard deviation
 
 ## Licence
 
-Licence: pending.
+The code is shared for the review of the paper only. All rights are reserved until the paper is
+accepted, and the final licence will be published then. See [LICENSE](LICENSE).
 
 The terms of the data are in `data/README.md`.
 
