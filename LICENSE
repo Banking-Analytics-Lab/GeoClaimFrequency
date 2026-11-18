@@ -1,0 +1,14 @@
+Copyright (c) 2026 the authors of the paper. All rights reserved.
+
+This code accompanies the paper "Revealing Geography-Driven Signals in Zone-Level Claim Frequency
+Models: An Empirical Study using Environmental and Visual Predictors", which is not yet published.
+It is shared so that the editors and reviewers of the paper can inspect and run it to evaluate the
+work. No other use, copying, modification or redistribution is permitted without the authors'
+written permission.
+
+The code is provided "as is", without warranty of any kind.
+
+The file "Preprocessing and Agreggation/beMTPL97_filtered.csv" is derived from the beMTPL97 data of
+the CASdatasets R package and keeps that package's licence, GPL (>= 2).
+
+The final licence will be published once the paper is accepted.
