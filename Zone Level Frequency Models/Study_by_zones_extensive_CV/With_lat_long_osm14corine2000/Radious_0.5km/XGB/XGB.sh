@@ -4,16 +4,16 @@
 #SBATCH --cpus-per-task=3
 #SBATCH --mem=16G
 #SBATCH --time=01:00:00
-#SBATCH --account=def-cbravo
+#SBATCH --account=<your-allocation>
 #SBATCH --output=XGB_extended.%A_%a.out
 
 module load gcc arrow/19.0.1
 source ~/p3_env_gnn/bin/activate
 
 OUTER_FOLD=${SLURM_ARRAY_TASK_ID}
-DATA_DIR="/home/salfonso/projects/rrg-cbravo/Project3/Study_by_zones_extensive_CV_1025/Data_creation/Stratified_division/alldata_with_fold_id.csv"
-OUT_DIR="/home/salfonso/scratch/Belgian/Study_by_zones_extensive_CV/With_lat_long_osm14corine2000/Radious_0.5km/XGB/Results"
-SCRIPT="/home/salfonso/projects/rrg-cbravo/Project3/Study_by_zones_extensive_CV_1025/Models_frequency/XGB/XGB.py"
+DATA_DIR="${WORK_DIR:-data/Data_creation}/Stratified_division/alldata_with_fold_id.csv"
+OUT_DIR="${RESULTS_DIR:-results}/With_lat_long_osm14corine2000/Radious_0.5km/XGB/Results"
+SCRIPT="${CODE_DIR:-.}/Zone Level Frequency Models/Models with Only tabular data/XGB.py"
 
 python "$SCRIPT" \
   --data_withfolds_id "$DATA_DIR" \

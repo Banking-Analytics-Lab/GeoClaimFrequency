@@ -17,10 +17,10 @@ NUM_VARS = "['ageph_mean','ageph_median','ageph_std','bm_mean','bm_median','bm_s
 CAT_VARS = "None"   
 
 # Paths
-DATA_CSV = "/home/salfonso/projects/rrg-cbravo/salfonso/Project3/Study_by_zones_extensive_CV_1025/Data_creation/Stratified_division/alldata_with_fold_id.csv"
-BASE_OUT_ROOT = "/home/salfonso/scratch/Belgian/Study_by_zones_extensive_CV/With_lat_long_osm14corine2000/DNN/Radious_0.5km"   
-GRID_CSV_TEMPLATE = "/home/salfonso/projects/rrg-cbravo/salfonso/Project3/Study_by_zones_extensive_CV_1025/Models_frequency/Imagenes_DNN/hyperparam_grid_ep{epochs}.csv"
-PYTHON_SCRIPT = "/home/salfonso/projects/rrg-cbravo/salfonso/Project3/Study_by_zones_extensive_CV_1025/Models_frequency/DNN/TabularDNN.py"
+DATA_CSV = os.path.join(os.environ.get("WORK_DIR", "data/Data_creation"), "Stratified_division/alldata_with_fold_id.csv")
+BASE_OUT_ROOT = os.path.join(os.environ.get("RESULTS_DIR", "results"), "With_lat_long_osm14corine2000/DNN/Radious_0.5km")   
+GRID_CSV_TEMPLATE = os.path.join(os.environ.get("INPUT_DIR", "data"), "hyperparam_grid_ep{epochs}.csv")
+PYTHON_SCRIPT = os.path.join(os.environ.get("CODE_DIR", "."), "Zone Level Frequency Models/Models with Only tabular data/TabularDNN.py")
 
 MODULE_LINES = """\
 module load gcc arrow/19.0.1
@@ -31,7 +31,7 @@ SBATCH_CPUS_LINE = "#SBATCH --cpus-per-task=2"
 SBATCH_MEM_LINE  = "#SBATCH --mem=8G"
 
 # Where to drop .sh files
-OUTPUT_FOLDER = "/home/salfonso/scratch/Belgian/Study_by_zones_extensive_CV/With_lat_long_osm14corine2000/DNN/Radious_0.5km"
+OUTPUT_FOLDER = os.path.join(os.environ.get("RESULTS_DIR", "results"), "With_lat_long_osm14corine2000/DNN/Radious_0.5km")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 template = dedent("""\
@@ -69,7 +69,7 @@ template = dedent("""\
 
     echo "[ep {epochs}] outer=${{OUTER}} task=${{IDX}} cfg_id=${{CONFIG_ID}} bs=${{BATCH_SIZE}} hd=${{HIDDEN_DIM}} ep=${{EPOCHS}} lr=${{LR}} dr=${{DROPOUT}} opt=${{OPTIMIZER}} wd=${{WEIGHT_DECAY}} seed=${{SEED}}"
 
-    python {python_script} \\
+    python "{python_script}" \\
         --data_withfolds_id "${{DATA_CSV}}" \\
         --outer_fold $OUTER \\
         --out_dir "${{OUT_DIR}}" \\

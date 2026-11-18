@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+title: "GeoClaimFrequency"
+# license: pending (the authors' consent is outstanding; no LICENSE file yet)
+repository-code: "https://github.com/Banking-Analytics-Lab/GeoClaimFrequency"
+authors:
+  - family-names: "Alfonso-Sánchez"
+    given-names: "Sherly"
+  - family-names: "Bravo"
+    given-names: "Cristián"
+  - family-names: "Stankova"
+    given-names: "Kristina G."
+preferred-citation:
+  type: article
+  title: "Revealing Geography-Driven Signals in Zone-Level Claim Frequency Models: An Empirical Study using Environmental and Visual Predictors"
+  year: 2026
+  journal: "arXiv preprint arXiv:2604.21893"
+  doi: "10.48550/arXiv.2604.21893"
+  url: "https://arxiv.org/abs/2604.21893"
+  authors:
+    - family-names: "Alfonso-Sánchez"
+      given-names: "Sherly"
+    - family-names: "Bravo"
+      given-names: "Cristián"
+    - family-names: "Stankova"
+      given-names: "Kristina G."

@@ -8,7 +8,7 @@ import os
 
 # Load data
 df = pd.read_csv(
-    '/home/salfonso/projects/rrg-cbravo/salfonso/Project3/Study_by_zones_extensive_CV_1025/Data_creation/With_osm14_corine2000/all/Data_all_osm14_clc2000_ALL.csv'
+    os.path.join(os.environ.get("WORK_DIR", "data/Data_creation"), "With_osm14_corine2000/all/Data_all_osm14_clc2000_ALL.csv")
 )
 
 # Target

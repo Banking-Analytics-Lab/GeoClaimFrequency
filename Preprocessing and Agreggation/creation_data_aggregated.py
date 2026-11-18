@@ -1,9 +1,10 @@
+import os
 import pandas as pd 
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 
-BelgMTPL_fil = pd.read_csv('C:\\Users\\salfo\\OneDrive - The University of Western Ontario\\PHD\\GNNActuary\\MTPL\\Belgian\\Preprocessing\\beMTPL97_filtered.csv', index_col=0)
+BelgMTPL_fil = pd.read_csv(os.environ.get("BEMTPL_FILTERED_CSV", "beMTPL97_filtered.csv"), index_col=0)
 
 print(BelgMTPL_fil.info())
 

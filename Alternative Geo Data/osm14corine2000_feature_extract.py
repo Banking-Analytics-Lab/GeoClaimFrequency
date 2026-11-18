@@ -30,9 +30,9 @@ warnings.filterwarnings("ignore")
 pd.set_option("display.max_columns", None)
 print = functools.partial(print, flush=True)
 
-PATH_LOCATIONS_CSV = "/home/salfonso/projects/def-cbravo/salfonso/Belgian/Preprocessing/Images_extract_unique_options/OSM_2014_CORINE_2000/unique_locations_BeMTPL97.csv"
-PATH_OSM_PBF       = "/home/salfonso/projects/def-cbravo/salfonso/Belgian/Preprocessing/Images_extract_unique_options/OMS/belgium-140101.osm.pbf"         # ~2014
-PATH_CLC2000_TIF   = "/home/salfonso/projects/def-cbravo/salfonso/Belgian/Preprocessing/Images_extract_unique_options/OSM_2014_CORINE_2000/U2006_CLC2000_V2020_20u1.tif"      # EPSG:3035
+PATH_LOCATIONS_CSV = os.path.join(os.environ.get("INPUT_DIR", "data"), "OSM_2014_CORINE_2000/unique_locations_BeMTPL97.csv")
+PATH_OSM_PBF       = os.path.join(os.environ.get("INPUT_DIR", "data"), "OMS/belgium-140101.osm.pbf")         # ~2014
+PATH_CLC2000_TIF   = os.path.join(os.environ.get("INPUT_DIR", "data"), "OSM_2014_CORINE_2000/U2006_CLC2000_V2020_20u1.tif")      # EPSG:3035
 OUT_CSV            = "osm_features_OSM2014_maskCLC2000_faster3.csv"
 
 # parameters

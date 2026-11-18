@@ -1,0 +1,22 @@
+# The package versions used for the paper were not recorded.
+# Package names come from the imports in the .py files, the notebooks and the inline Python in the Slurm scripts.
+# pyarrow is not imported, but pandas needs it for DataFrame.to_parquet in creation_nomic3km_emb.py.
+geopandas
+joblib
+matplotlib
+networkx
+numpy
+pandas
+pillow
+pyarrow
+pyrosm
+rasterio
+scikit-learn
+scipy
+seaborn
+shapely
+statsmodels
+torch
+torchvision
+transformers
+xgboost
